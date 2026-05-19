@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Oscilator audio</title>
+</head>
+<body>
+    <header class="page-header">
+        <nav class="nav">
+            <div class="nav-links">
+                <a href="index.html">Teorie</a>
+                <a class="button-link" href="oscilator.html">Oscilator</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="oscillator-page">
+        <section class="oscillator-panel">
+            <div class="lab-topline">
+                <div class="panel-copy">
+                    <p class="eyebrow">Oscilator interactiv</p>
+                    <p>
+                        Modifică frecvența, volumul și forma undei. Graficul se misca in timp real.
+                    </p>
+                </div>
+                <div id="status" class="status-pill">OPRIT</div>
+            </div>
+
+            <div class="visualizer" aria-label="Reprezentare vizuală a undei sonore">
+                <canvas id="waveCanvas"></canvas>
+            </div>
+
+            <div class="readouts">
+                <div class="readout">
+                    <span>Frecvență</span>
+                    <strong id="frequencyReadout">440 Hz</strong>
+                </div>
+                <div class="readout">
+                    <span>Volum</span>
+                    <strong id="volumeReadout">20%</strong>
+                </div>
+                <div class="readout">
+                    <span>Undă</span>
+                    <strong id="waveReadout">Sinusoidală</strong>
+                </div>
+            </div>
+
+            <div class="controls">
+                <label class="control">
+                    <span>Frecvență: <strong id="frequencyValue">440 Hz</strong></span>
+                    <input id="frequency" type="range" min="80" max="1200" value="440">
+                </label>
+
+                <label class="control">
+                    <span>Volum: <strong id="volumeValue">20%</strong></span>
+                    <input id="volume" type="range" min="0" max="100" value="20">
+                </label>
+
+                <label class="control">
+                    <span>Formă de undă</span>
+                    <select id="waveType">
+                        <option value="sine">Sinusoidală</option>
+                        <option value="square">Dreptunghiulară</option>
+                        <option value="triangle">Triunghiulară</option>
+                        <option value="sawtooth">Dinți de fierăstrău</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="meter-panel">
+                <div class="meter-header">
+                    <span>Indicator volum</span>
+                    <strong id="dangerText">Zonă sigură</strong>
+                </div>
+                <div class="volume-meter" aria-label="Indicator stil decibeli pentru volum">
+                    <div id="meterFill" class="meter-fill"></div>
+                    <span class="meter-zone safe">sigur</span>
+                    <span class="meter-zone warning">atenție</span>
+                    <span class="meter-zone danger">pericol</span>
+                </div>
+            </div>
+
+            <div class="effects-panel">
+                <button id="echoButton" class="effect-button" type="button" aria-pressed="false">Echo</button>
+                <button id="filterButton" class="effect-button" type="button" aria-pressed="false">Filtru cald</button>
+            </div>
+
+            <div class="piano-panel" aria-label="Pian controlat din tastatură">
+                <button class="piano-key" type="button" data-key="a" data-frequency="261.63" data-note="Do4">
+                    <span>Do4</span><kbd>A</kbd>
+                </button>
+                <button class="piano-key" type="button" data-key="s" data-frequency="293.66" data-note="Re4">
+                    <span>Re4</span><kbd>S</kbd>
+                </button>
+                <button class="piano-key" type="button" data-key="d" data-frequency="329.63" data-note="Mi4">
+                    <span>Mi4</span><kbd>D</kbd>
+                </button>
+                <button class="piano-key" type="button" data-key="f" data-frequency="349.23" data-note="Fa4">
+                    <span>Fa4</span><kbd>F</kbd>
+                </button>
+                <button class="piano-key" type="button" data-key="g" data-frequency="392.00" data-note="Sol4">
+                    <span>Sol4</span><kbd>G</kbd>
+                </button>
+                <button class="piano-key" type="button" data-key="h" data-frequency="440.00" data-note="La4">
+                    <span>La4</span><kbd>H</kbd>
+                </button>
+                <button class="piano-key" type="button" data-key="j" data-frequency="493.88" data-note="Si4">
+                    <span>Si4</span><kbd>J</kbd>
+                </button>
+                <button class="piano-key" type="button" data-key="k" data-frequency="523.25" data-note="Do5">
+                    <span>Do5</span><kbd>K</kbd>
+                </button>
+            </div>
+
+            <div class="actions">
+                <button id="playButton" class="primary-button" type="button">Pornește sunetul</button>
+                <button id="stopButton" class="secondary-button" type="button">Oprește</button>
+            </div>
+        </section>
+
+        <section class="section compact-section">
+            <div class="info-grid two-columns">
+                <article class="card">
+                    <h3>Ce controlează frecvența?</h3>
+                    <p>
+                        Frecvența controlează cât de repede oscilează unda. La 440 Hz, semnalul
+                        face 440 de oscilații într-o secundă, ceea ce corespunde notei La standard.
+                    </p>
+                </article>
+                <article class="card">
+                    <h3>Ce controlează volumul?</h3>
+                    <p>
+                        Volumul este legat de amplitudine. În cod, sliderul schimbă valoarea unui
+                        nod de amplificare, astfel încât sunetul devine mai slab sau mai puternic.
+                    </p>
+                </article>
+                <article class="card">
+                    <h3>De ce există zona roșie?</h3>
+                    <p>
+                        Indicatorul este estimativ și arată ideea de risc: la volum mare, energia
+                        semnalului crește, iar ascultarea îndelungată poate deveni neplăcută sau
+                        periculoasă pentru auz.
+                    </p>
+                </article>
+                <article class="card">
+                    <h3>Cum funcționează efectele?</h3>
+                    <p>
+                        Echo repetă semnalul după o întârziere scurtă, iar filtrul cald reduce
+                        frecvențele foarte înalte pentru un sunet mai moale.
+                    </p>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const frequencySlider = document.getElementById("frequency");
+        const volumeSlider = document.getElementById("volume");
+        const waveTypeSelect = document.getElementById("waveType");
+        const frequencyValue = document.getElementById("frequencyValue");
+        const volumeValue = document.getElementById("volumeValue");
+        const frequencyReadout = document.getElementById("frequencyReadout");
+        const volumeReadout = document.getElementById("volumeReadout");
+        const waveReadout = document.getElementById("waveReadout");
+        const status = document.getElementById("status");
+        const meterFill = document.getElementById("meterFill");
+        const dangerText = document.getElementById("dangerText");
+        const echoButton = document.getElementById("echoButton");
+        const filterButton = document.getElementById("filterButton");
+        const playButton = document.getElementById("playButton");
+        const stopButton = document.getElementById("stopButton");
+        const pianoKeys = document.querySelectorAll(".piano-key");
+        const canvas = document.getElementById("waveCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let audioContext;
+        let oscillator;
+        let gainNode;
+        let delayNode;
+        let feedbackNode;
+        let filterNode;
+        let isPlaying = false;
+        let echoEnabled = false;
+        let filterEnabled = false;
+        let pianoIsHoldingSound = false;
+        let phaseOffset = 0;
+        let animationId;
+
+        function resizeCanvas() {
+            const pixelRatio = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+
+            canvas.width = Math.floor(rect.width * pixelRatio);
+            canvas.height = Math.floor(rect.height * pixelRatio);
+            ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+        }
+
+        function getWaveSample(phase, waveType) {
+            if (waveType === "square") {
+                return Math.sin(phase) >= 0 ? 1 : -1;
+            }
+
+            if (waveType === "triangle") {
+                return (2 / Math.PI) * Math.asin(Math.sin(phase));
+            }
+
+            if (waveType === "sawtooth") {
+                return 2 * (phase / (Math.PI * 2) - Math.floor(0.5 + phase / (Math.PI * 2)));
+            }
+
+            return Math.sin(phase);
+        }
+
+        function drawWave() {
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            const frequency = Number(frequencySlider.value);
+            const volume = Number(volumeSlider.value) / 100;
+            const waveType = waveTypeSelect.value;
+            const centerY = height / 2;
+            const amplitude = 18 + volume * 112;
+            const cycles = frequency / 125;
+
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = "#06111d";
+            ctx.fillRect(0, 0, width, height);
+
+            for (let y = 40; y < height; y += 40) {
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.055)";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+
+            for (let x = 0; x < width; x += 52) {
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(width, centerY);
+            ctx.stroke();
+
+            ctx.shadowColor = "rgba(32, 201, 151, 0.8)";
+            ctx.shadowBlur = isPlaying ? 18 : 9;
+            ctx.strokeStyle = isPlaying ? "#37f2b3" : "#20c997";
+            ctx.lineWidth = isPlaying ? 4 : 3;
+            ctx.beginPath();
+
+            for (let x = 0; x <= width; x++) {
+                const phase = (x / width) * Math.PI * 2 * cycles + phaseOffset;
+                const sample = getWaveSample(phase, waveType);
+                const y = centerY - sample * amplitude;
+                if (x === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = "rgba(255, 255, 255, 0.72)";
+            ctx.font = "700 13px Segoe UI, Arial, sans-serif";
+            ctx.fillText(isPlaying ? "semnal activ" : "previzualizare statică", 18, 28);
+        }
+
+        function animateWave() {
+            phaseOffset += Number(frequencySlider.value) / 2200;
+            drawWave();
+
+            if (isPlaying) {
+                animationId = requestAnimationFrame(animateWave);
+            }
+        }
+
+        function updateLabels() {
+            frequencyValue.textContent = `${frequencySlider.value} Hz`;
+            volumeValue.textContent = `${volumeSlider.value}%`;
+            frequencyReadout.textContent = `${frequencySlider.value} Hz`;
+            volumeReadout.textContent = `${volumeSlider.value}%`;
+            waveReadout.textContent = waveTypeSelect.options[waveTypeSelect.selectedIndex].text;
+            updateVolumeMeter();
+        }
+
+        function updateVolumeMeter() {
+            const volume = Number(volumeSlider.value);
+            meterFill.style.width = `${volume}%`;
+            meterFill.className = "meter-fill";
+
+            if (volume >= 80) {
+                meterFill.classList.add("danger-level");
+                dangerText.textContent = "Zonă de pericol";
+            } else if (volume >= 55) {
+                meterFill.classList.add("warning-level");
+                dangerText.textContent = "Atenție";
+            } else {
+                meterFill.classList.add("safe-level");
+                dangerText.textContent = "Zonă sigură";
+            }
+        }
+
+        function connectAudioGraph() {
+            oscillator.disconnect();
+            gainNode.disconnect();
+            filterNode.disconnect();
+            delayNode.disconnect();
+            feedbackNode.disconnect();
+
+            const outputNode = filterEnabled ? filterNode : gainNode;
+
+            oscillator.connect(gainNode);
+
+            if (filterEnabled) {
+                gainNode.connect(filterNode);
+            }
+
+            outputNode.connect(audioContext.destination);
+
+            if (echoEnabled) {
+                outputNode.connect(delayNode);
+                delayNode.connect(feedbackNode);
+                feedbackNode.connect(delayNode);
+                delayNode.connect(audioContext.destination);
+            }
+        }
+
+        function updateEffects() {
+            echoButton.classList.toggle("active", echoEnabled);
+            filterButton.classList.toggle("active", filterEnabled);
+            echoButton.setAttribute("aria-pressed", String(echoEnabled));
+            filterButton.setAttribute("aria-pressed", String(filterEnabled));
+
+            if (isPlaying) {
+                connectAudioGraph();
+            }
+        }
+
+        function updateSound() {
+            updateLabels();
+            drawWave();
+
+            if (!isPlaying) {
+                return;
+            }
+
+            oscillator.frequency.setValueAtTime(Number(frequencySlider.value), audioContext.currentTime);
+            oscillator.type = waveTypeSelect.value;
+            gainNode.gain.setValueAtTime(Number(volumeSlider.value) / 100, audioContext.currentTime);
+            filterNode.frequency.setValueAtTime(900, audioContext.currentTime);
+        }
+
+        function startSound() {
+            if (isPlaying) {
+                return;
+            }
+
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            oscillator = audioContext.createOscillator();
+            gainNode = audioContext.createGain();
+            delayNode = audioContext.createDelay();
+            feedbackNode = audioContext.createGain();
+            filterNode = audioContext.createBiquadFilter();
+
+            oscillator.type = waveTypeSelect.value;
+            oscillator.frequency.setValueAtTime(Number(frequencySlider.value), audioContext.currentTime);
+            gainNode.gain.setValueAtTime(Number(volumeSlider.value) / 100, audioContext.currentTime);
+            delayNode.delayTime.setValueAtTime(0.24, audioContext.currentTime);
+            feedbackNode.gain.setValueAtTime(0.28, audioContext.currentTime);
+            filterNode.type = "lowpass";
+            filterNode.frequency.setValueAtTime(900, audioContext.currentTime);
+
+            connectAudioGraph();
+            oscillator.start();
+            isPlaying = true;
+            playButton.textContent = "Sunet pornit";
+            status.textContent = "ACTIV";
+            cancelAnimationFrame(animationId);
+            animateWave();
+        }
+
+        function stopSound() {
+            if (!isPlaying) {
+                return;
+            }
+
+            oscillator.stop();
+            audioContext.close();
+            isPlaying = false;
+            pianoIsHoldingSound = false;
+            playButton.textContent = "Pornește sunetul";
+            status.textContent = "OPRIT";
+            setActivePianoKey("");
+            cancelAnimationFrame(animationId);
+            drawWave();
+        }
+
+        function setActivePianoKey(activeKey) {
+            pianoKeys.forEach((key) => {
+                key.classList.toggle("active", key.dataset.key === activeKey);
+            });
+        }
+
+        function playPianoNote(keyButton, holdSound) {
+            frequencySlider.value = Math.round(Number(keyButton.dataset.frequency));
+            frequencySlider.dataset.note = keyButton.dataset.note;
+            updateSound();
+            setActivePianoKey(keyButton.dataset.key);
+
+            if (!isPlaying) {
+                pianoIsHoldingSound = holdSound;
+                startSound();
+            }
+        }
+
+        function releasePianoNote(keyName) {
+            if (pianoIsHoldingSound) {
+                stopSound();
+            } else {
+                setActivePianoKey("");
+            }
+        }
+
+        function findPianoKey(keyName) {
+            return document.querySelector(`.piano-key[data-key="${keyName}"]`);
+        }
+
+        frequencySlider.addEventListener("input", updateSound);
+        volumeSlider.addEventListener("input", updateSound);
+        waveTypeSelect.addEventListener("change", updateSound);
+        echoButton.addEventListener("click", () => {
+            echoEnabled = !echoEnabled;
+            updateEffects();
+        });
+        filterButton.addEventListener("click", () => {
+            filterEnabled = !filterEnabled;
+            updateEffects();
+        });
+        playButton.addEventListener("click", startSound);
+        stopButton.addEventListener("click", stopSound);
+        pianoKeys.forEach((keyButton) => {
+            keyButton.addEventListener("pointerdown", () => playPianoNote(keyButton, true));
+            keyButton.addEventListener("pointerup", () => releasePianoNote(keyButton.dataset.key));
+            keyButton.addEventListener("pointerleave", () => releasePianoNote(keyButton.dataset.key));
+        });
+        window.addEventListener("keydown", (event) => {
+            const keyButton = findPianoKey(event.key.toLowerCase());
+            if (!keyButton || event.repeat) {
+                return;
+            }
+
+            playPianoNote(keyButton, true);
+        });
+        window.addEventListener("keyup", (event) => {
+            releasePianoNote(event.key.toLowerCase());
+        });
+        window.addEventListener("resize", () => {
+            resizeCanvas();
+            drawWave();
+        });
+
+        resizeCanvas();
+        updateLabels();
+        updateEffects();
+        drawWave();
+    </script>
+</body>
+</html>
